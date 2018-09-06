@@ -4,7 +4,7 @@ from heap_lib import node
 class binomial_queue:
 
     def __init__(self, rank, children):
-        self.rank = rank 
+        self.rank = rank
         self.children = children
         map((lambda x: x.set_parent(self)), self.children)
         self.children.sort(key=lambda x: x.rank)
@@ -27,7 +27,7 @@ class binomial_queue:
                 index = 0
 
                 iter_list = None
-                if tree2.parent != None:
+                if tree2.parent is not None:
                     iter_list = tree2.parent
                 else:
                     iter_list = self
@@ -48,7 +48,7 @@ class binomial_queue:
                 index = -1
 
                 iter_list = None
-                if tree1.parent != None:
+                if tree1.parent is not None:
                     iter_list = tree1.parent
                 else:
                     iter_list = self
@@ -75,7 +75,7 @@ class binomial_queue:
     def insert_helper(self, insert_tree):
 
         iter_list = None
-        if insert_tree.parent != None:
+        if insert_tree.parent is not None:
             iter_list = insert_tree.parent
         else:
             iter_list = self
@@ -83,7 +83,7 @@ class binomial_queue:
         for sibling in iter_list.children:
 
             sibling_list = None
-            if sibling.parent != None:
+            if sibling.parent is not None:
                 sibling_list = sibling.parent
             else:
                 sibling_list = self

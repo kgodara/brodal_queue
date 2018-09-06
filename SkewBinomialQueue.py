@@ -1,4 +1,4 @@
-from Heap_Lib import node
+from heap_lib import node
 
 
 class skew_binomial_queue:
@@ -6,7 +6,7 @@ class skew_binomial_queue:
     def __init__(self, rank, children):
         self.rank = rank
         self.children = children
-        map((lambda x: x.parent=self), self.children)
+        map((lambda x: x.parent(self)), self.children)
         self.children.sort(key=lambda x: x.rank)
 
     def get_root(self):
@@ -97,6 +97,8 @@ class skew_binomial_queue:
                         index = idx
                 if index >= 0:
                     del tree2.parent.children[index]
+            else:
+                self.children.remove(tree2)
 
             tree0.parent = tree1
             tree2.parent = tree1
@@ -123,6 +125,8 @@ class skew_binomial_queue:
                         index = idx
                 if index >= 0:
                     del tree1.parent.children[index]
+            else:
+                self.children.remove(tree1)
 
             tree0.parent = tree2
             tree1.parent = tree2
@@ -143,6 +147,8 @@ class skew_binomial_queue:
                         index = idx
                 if index >= 0:
                     del tree1.parent.children[index]
+            else:
+                self.children.remove(tree1)
 
             index = -1
             if tree2.parent is not None:
@@ -151,11 +157,28 @@ class skew_binomial_queue:
                         index = idx
                 if index >= 0:
                     del tree2.parent.children[index]
+            else:
+                self.children.remove(tree2)
 
             tree1.parent = tree0
             tree2.parent = tree0
 
             tree0.rank += 1
+
+    # add checks for if less than 2 trees in queue
+    def insert(self, val):
+
+        self.children.sort(key=lambda x: x.rank)
+        insert_tree = node(0, val, [])
+        print('type: ' + str(type(self.children[0])))
+        two_smallest = [self.children[0], self.children[1]]
+        if two_smallest[0].rank == two_smallest[1].rank:
+            self.skew_link(insert_tree, two_smallest[0], two_smallest[1])
+
+        elif two_smallest[0].rank != two_smallest[1].rank:
+            self.children.append(insert_tree)
+            self.children.sort(key=lambda x: x.rank)
+            insert_tree.parent = None
 
     def meld_queue(self, new_queue):
         self.children.extend(new_queue.children)
@@ -172,4 +195,35 @@ class skew_binomial_queue:
             else:
                 i += 1
 
+    def print_queue(self):
 
+        print('[rank=' + str(self.rank) + ']')
+
+        if self.rank > 0:
+            for tree in self.children:
+                self.print_helper(1, tree)
+
+    def print_helper(self, depth, tree):
+
+        print(('  '*depth) + '[rank=' + str(tree.rank)+', val=' + str(tree.val) + ']')
+
+        if tree.rank > 0:
+            for tree in tree.children:
+                self.print_helper(depth + 1, tree)
+
+
+# TEST / DEMO SECTION
+tree0 = node(0, 4, [])
+tree1 = node(1, 5, [node(0, 6, [])])
+tree2 = node(2, 8, [node(1, 10, [node(0, 11, [])]), node(0, 9, [])])
+
+queue0 = skew_binomial_queue(3, [tree0, tree1, tree2])
+
+print('QUEUE 1:')
+queue0.print_queue()
+print()
+
+print('TRYING INSERT BELOW: ')
+queue0.insert(12)
+queue0.insert(13)
+queue0.print_queue()
