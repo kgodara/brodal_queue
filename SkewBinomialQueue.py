@@ -157,5 +157,19 @@ class skew_binomial_queue:
 
             tree0.rank += 1
 
+    def meld_queue(self, new_queue):
+        self.children.extend(new_queue.children)
+        self.children.sort(key=lambda x: x.rank)
+
+        i = 0
+        while i < (len(self.children) - 1):
+
+            if self.children[i].rank == self.children[i+1].rank:
+                result = self.simple_link(self.children[i], self.children[i+1])
+                # Prevents us from looping to -1, which ruins the whole meld
+                if i > 0:
+                    i -= 1
+            else:
+                i += 1
 
 
