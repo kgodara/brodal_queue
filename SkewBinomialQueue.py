@@ -170,7 +170,7 @@ class skew_binomial_queue:
 
         self.children.sort(key=lambda x: x.rank)
         insert_tree = node(0, val, [])
-        print('type: ' + str(type(self.children[0])))
+
         two_smallest = [self.children[0], self.children[1]]
         if two_smallest[0].rank == two_smallest[1].rank:
             self.skew_link(insert_tree, two_smallest[0], two_smallest[1])
@@ -180,8 +180,11 @@ class skew_binomial_queue:
             self.children.sort(key=lambda x: x.rank)
             insert_tree.parent = None
 
-    def meld_queue(self, new_queue):
-        self.children.extend(new_queue.children)
+    def meld_queue(self, new_queue, isTree=False):
+        if isTree:
+            self.children.append(new_queue)
+        else:
+            self.children.extend(new_queue.children)
         self.children.sort(key=lambda x: x.rank)
 
         i = 0
@@ -194,6 +197,25 @@ class skew_binomial_queue:
                     i -= 1
             else:
                 i += 1
+
+    def extract_min(self):
+        smallest = self.get_min()
+        self.children.remove(smallest)
+
+        singletons = list()
+        for child in smallest.children:
+            if child.rank == 0:
+                singletons.append(child)
+                child.parent = None
+                smallest.children.remove(child)
+
+        for sub_queue in smallest.children:
+            self.meld_queue(sub_queue, isTree=True)
+
+        for singleton in singletons:
+            self.insert(singleton.val)
+
+
 
     def print_queue(self):
 
@@ -215,7 +237,7 @@ class skew_binomial_queue:
 # TEST / DEMO SECTION
 tree0 = node(0, 4, [])
 tree1 = node(1, 5, [node(0, 6, [])])
-tree2 = node(2, 8, [node(1, 10, [node(0, 11, [])]), node(0, 9, [])])
+tree2 = node(2, 2, [node(1, 10, [node(0, 11, [])]), node(0, 9, [])])
 
 queue0 = skew_binomial_queue(3, [tree0, tree1, tree2])
 
@@ -226,4 +248,8 @@ print()
 print('TRYING INSERT BELOW: ')
 queue0.insert(12)
 queue0.insert(13)
+queue0.print_queue()
+
+print('EXTRACT MIN:')
+queue0.extract_min()
 queue0.print_queue()
