@@ -120,7 +120,7 @@ class binomial_queue:
                 i += 1
 
     def get_min(self):
-        smallest = node(0,float("inf"), [])
+        smallest = node(0, float("inf"), [])
         for tree in self.children:
             if tree.val < smallest.val:
                 smallest = tree
