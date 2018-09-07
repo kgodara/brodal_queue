@@ -1,5 +1,5 @@
 from heap_lib import node
-
+from heap_lib import print_queue
 
 class skew_binomial_queue:
 
@@ -7,7 +7,7 @@ class skew_binomial_queue:
         self.rank = rank
         self.children = children
         map((lambda x: x.parent(self)), self.children)
-        self.children.sort(key=lambda x: x.rank)
+        self.children.sort(key=lambda x: x.rank, reverse=True)
 
     def get_root(self):
         return self.val
@@ -177,15 +177,17 @@ class skew_binomial_queue:
 
         elif two_smallest[0].rank != two_smallest[1].rank:
             self.children.append(insert_tree)
-            self.children.sort(key=lambda x: x.rank)
+            # self.children.sort(key=lambda x: x.rank)
             insert_tree.parent = None
+        self.rank = max(tree.rank for tree in self.children)+1
+        self.children.sort(key=lambda x: x.rank, reverse=True)
 
     def meld_queue(self, new_queue, isTree=False):
         if isTree:
             self.children.append(new_queue)
         else:
             self.children.extend(new_queue.children)
-        self.children.sort(key=lambda x: x.rank)
+        self.children.sort(key=lambda x: x.rank, reverse=True)
 
         i = 0
         while i < (len(self.children) - 1):
@@ -197,6 +199,7 @@ class skew_binomial_queue:
                     i -= 1
             else:
                 i += 1
+        self.rank = max(tree.rank for tree in self.children)+1
 
     def extract_min(self):
         smallest = self.get_min()
@@ -214,42 +217,33 @@ class skew_binomial_queue:
 
         for singleton in singletons:
             self.insert(singleton.val)
+        self.rank = max(tree.rank for tree in self.children)+1
 
 
-
-    def print_queue(self):
-
-        print('[rank=' + str(self.rank) + ']')
-
-        if self.rank > 0:
-            for tree in self.children:
-                self.print_helper(1, tree)
-
-    def print_helper(self, depth, tree):
-
-        print(('  '*depth) + '[rank=' + str(tree.rank)+', val=' + str(tree.val) + ']')
-
-        if tree.rank > 0:
-            for tree in tree.children:
-                self.print_helper(depth + 1, tree)
 
 
 # TEST / DEMO SECTION
 tree0 = node(0, 4, [])
 tree1 = node(1, 5, [node(0, 6, [])])
 tree2 = node(2, 2, [node(1, 10, [node(0, 11, [])]), node(0, 9, [])])
+tree3 = node(2, 7, [node(1, 8, [node(0, 9, [])]), node(0, 10, [])])
 
 queue0 = skew_binomial_queue(3, [tree0, tree1, tree2])
 
 print('QUEUE 1:')
-queue0.print_queue()
+print_queue(queue0)
 print()
 
 print('TRYING INSERT BELOW: ')
 queue0.insert(12)
 queue0.insert(13)
-queue0.print_queue()
+print_queue(queue0)
 
 print('EXTRACT MIN:')
 queue0.extract_min()
-queue0.print_queue()
+print_queue(queue0)
+print()
+
+print('MELD WITH TREE 3')
+queue0.meld_queue(tree3, isTree=True)
+print_queue(queue0)

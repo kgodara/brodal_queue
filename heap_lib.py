@@ -24,3 +24,21 @@ class node:
 
     def __str__(self):
         return '[rank=' + str(self.rank)+', val=' + str(self.val) + ']'
+
+
+def print_queue(queue):
+
+        print('[rank=' + str(queue.rank) + ']')
+
+        if queue.rank > 0:
+            for tree in queue.children:
+                print_helper(1, tree)
+
+
+def print_helper(depth, tree):
+
+        print(('  '*depth) + '[rank=' + str(tree.rank)+', val=' + str(tree.val) + ']')
+
+        if tree.rank > 0:
+            for tree in tree.children:
+                print_helper(depth + 1, tree)

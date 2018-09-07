@@ -1,5 +1,5 @@
 from heap_lib import node
-
+from heap_lib import print_queue
 
 class binomial_queue:
 
@@ -132,22 +132,6 @@ class binomial_queue:
         self.children.remove(smallest)
         self.meld_queue(meld_queue)
 
-    def print_queue(self):
-
-        print('[rank=' + str(self.rank) + ']')
-
-        if self.rank > 0:
-            for tree in self.children:
-                self.print_helper(1, tree)
-
-    def print_helper(self, depth, tree):
-
-        print(('  '*depth) + '[rank=' + str(tree.rank)+', val=' + str(tree.val) + ']')
-
-        if tree.rank > 0:
-            for tree in tree.children:
-                self.print_helper(depth + 1, tree)
-
 
 # TEST / DEMO SECTION
 tree0 = node(0, 4, [])
@@ -157,27 +141,27 @@ tree2 = node(2, 8, [node(1, 10, [node(0, 11, [])]), node(0, 9, [])])
 queue0 = binomial_queue(3, [tree0, tree1, tree2])
 
 print('QUEUE 1:')
-queue0.print_queue()
+print_queue(queue0)
 print()
 
 print('TRYING INSERT BELOW: ')
 queue0.insert(12)
-queue0.print_queue()
+print_queue(queue0)
 print()
 
 tree3 = node(0, 7, [])
 tree4 = node(1, 13, [node(0, 17, [])])
 queue1 = binomial_queue(2, [tree3, tree4])
 print('QUEUE 2:')
-queue1.print_queue()
+print_queue(queue1)
 print()
 
 queue0.meld_queue(queue1)
 print('MELDED QUEUE:')
-queue0.print_queue()
+print_queue(queue0)
 print()
 
 print('EXTRACT MIN:')
 queue0.extract_min()
-queue0.print_queue()
+print_queue(queue0)
 print()
