@@ -1,3 +1,12 @@
+# TODO: 
+'''
+the children of skew binomial trees are maintained in a more complicated
+order. The ti children are maintained in decreasing order of rank, but
+they are interleaved with the si children, which have rank 0 (except
+sk, which has rank r − k). Furthermore, recall that each si is optional
+(except that sk is optional only if k = r).
+'''
+
 from heap_lib import node
 from heap_lib import print_queue
 
@@ -6,7 +15,7 @@ class skew_binomial_queue:
     def __init__(self, rank, children):
         self.rank = rank
         self.children = children
-        map((lambda x: x.parent(self)), self.children)
+        map((lambda x: x.set_parent(self)), self.children)
         self.children.sort(key=lambda x: x.rank, reverse=True)
 
     def get_root(self):
@@ -74,22 +83,33 @@ class skew_binomial_queue:
                 return 1
         return -1
 
-    def skew_link(self, tree0, tree1, tree2):
-        assert(tree0.rank == 0 and tree1.rank == tree2.rank)
-        # type B skew link
-        if tree1.val < tree0.val and tree1.val < tree2.val:
-            tree1.children.insert(0, tree2)
-            tree1.children.insert(0, tree0)
+# We perform a type A skew link if
+# the rank 0 tree has the smallest root
 
-            # possible_parent = tree0.parent
+# type B skew link if one of
+# the rank r trees has the smallest root.
+
+    def skew_link(self, singleton, tree1, tree2):
+        assert(singleton.rank == 0 and tree1.rank == tree2.rank)
+
+        # type B skew link, tree 1 smallest root
+        if tree1.val < singleton.val and tree1.val < tree2.val:
+            tree1.children.insert(0, tree2)
+            tree1.children.insert(0, singleton)
+
+            # possible_parent = singleton.parent
+
+            # If the singleton has a parent reference, remove the singleton from the parent's list of children
             index = -1
-            if tree0.parent is not None:
-                for idx, child in enumerate(tree0.parent.children):
-                    if id(child) == id(tree0):
+            if singleton.parent is not None:
+                for idx, child in enumerate(singleton.parent.children):
+                    if id(child) == id(singleton):
                         index = idx
                 if index >= 0:
-                    del tree0.parent.children[index]
+                    del singleton.parent.children[index]
 
+            # If the singleton has a parent reference, remove the singleton from the parent's list of children
+            # If it doesn't have a parent reference, then it could be a child of this heap
             index = -1
             if tree2.parent is not None:
                 for idx, child in enumerate(tree2.parent.children):
@@ -100,23 +120,24 @@ class skew_binomial_queue:
             else:
                 self.children.remove(tree2)
 
-            tree0.parent = tree1
+            singleton.parent = tree1
             tree2.parent = tree1
 
             tree1.rank += 1
 
-        elif tree2.val < tree0.val and tree2.val < tree1.val:
+        # type B skew link, tree 2 smallest root
+        elif tree2.val < singleton.val and tree2.val < tree1.val:
             tree2.children.insert(0, tree1)
-            tree2.children.insert(0, tree0)
+            tree2.children.insert(0, singleton)
 
-            # possible_parent = tree0.parent
+            # possible_parent = singleton.parent
             index = -1
-            if tree0.parent is not None:
-                for idx, child in enumerate(tree0.parent.children):
-                    if id(child) == id(tree0):
+            if singleton.parent is not None:
+                for idx, child in enumerate(singleton.parent.children):
+                    if id(child) == id(singleton):
                         index = idx
                 if index >= 0:
-                    del tree0.parent.children[index]
+                    del singleton.parent.children[index]
 
             index = -1
             if tree1.parent is not None:
@@ -128,17 +149,17 @@ class skew_binomial_queue:
             else:
                 self.children.remove(tree1)
 
-            tree0.parent = tree2
+            singleton.parent = tree2
             tree1.parent = tree2
 
             tree2.rank += 1
 
         # type A skew link
         else:
-            tree0.children.insert(0, tree1)
-            tree0.children.insert(0, tree2)
+            singleton.children.insert(0, tree1)
+            singleton.children.insert(0, tree2)
 
-            # possible_parent = tree0.parent
+            # possible_parent = singleton.parent
 
             index = -1
             if tree1.parent is not None:
@@ -160,16 +181,25 @@ class skew_binomial_queue:
             else:
                 self.children.remove(tree2)
 
-            tree1.parent = tree0
-            tree2.parent = tree0
+            tree1.parent = singleton
+            tree2.parent = singleton
 
-            tree0.rank += 1
+            # rank is now: r + 1
+            tree1.rank += 1
 
     # add checks for if less than 2 trees in queue
     def insert(self, val):
 
         self.children.sort(key=lambda x: x.rank)
         insert_tree = node(0, val, [])
+
+        if len(self.children) < 2:
+            self.children.append(insert_tree)
+            # self.children.sort(key=lambda x: x.rank)
+            insert_tree.parent = None
+            self.rank = max(tree.rank for tree in self.children)+1
+            self.children.sort(key=lambda x: x.rank)
+            return
 
         two_smallest = [self.children[0], self.children[1]]
         if two_smallest[0].rank == two_smallest[1].rank:
@@ -180,11 +210,12 @@ class skew_binomial_queue:
             # self.children.sort(key=lambda x: x.rank)
             insert_tree.parent = None
         self.rank = max(tree.rank for tree in self.children)+1
-        self.children.sort(key=lambda x: x.rank, reverse=True)
+        self.children.sort(key=lambda x: x.rank)
 
     def meld_queue(self, new_queue, isTree=False):
         if isTree:
             self.children.append(new_queue)
+        # If we want to add every tree in another heap at once
         else:
             self.children.extend(new_queue.children)
         self.children.sort(key=lambda x: x.rank, reverse=True)
@@ -220,15 +251,15 @@ class skew_binomial_queue:
         self.rank = max(tree.rank for tree in self.children)+1
 
 
-
-
 # TEST / DEMO SECTION
-tree0 = node(0, 4, [])
+
+tree_first = node(0, 4, [])
 tree1 = node(1, 5, [node(0, 6, [])])
 tree2 = node(2, 2, [node(1, 10, [node(0, 11, [])]), node(0, 9, [])])
+
 tree3 = node(2, 7, [node(1, 8, [node(0, 9, [])]), node(0, 10, [])])
 
-queue0 = skew_binomial_queue(3, [tree0, tree1, tree2])
+queue0 = skew_binomial_queue(3, [tree_first, tree1, tree2])
 
 print('QUEUE 1:')
 print_queue(queue0)

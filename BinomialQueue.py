@@ -165,3 +165,9 @@ print('EXTRACT MIN:')
 queue0.extract_min()
 print_queue(queue0)
 print()
+
+
+print("TEST 1")
+
+
+
